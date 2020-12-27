@@ -5,7 +5,7 @@ import 'package:finder/values/strings.dart';
 import 'package:finder/values/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
+import 'package:flutter/src/widgets/framework.dart';
 void main() {
   runApp(MyApp());
 }
