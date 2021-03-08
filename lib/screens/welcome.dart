@@ -1,24 +1,33 @@
 import 'dart:math';
 
+
 import 'package:assets_audio_player/assets_audio_player.dart';
+import 'package:finder/utils/buttons.dart';
+import 'package:finder/utils/successDialog.dart';
+import 'package:finder/utils/timesUpDialog.dart';
 import 'package:finder/values/dialog.dart' show UnicornAlertDialog;
 import 'package:finder/values/firebasecontroller.dart';
+import 'package:finder/values/levellist.dart';
+import 'package:finder/values/leveltime.dart';
 import 'package:finder/values/strings.dart';
 import 'package:finder/values/theme.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 
 import '../pageprovider.dart';
 
+GlobalKey<_WelcomeState> globalKey = new GlobalKey<_WelcomeState>();
 class Welcome extends StatefulWidget {
-  final int seconds;
   final VoidCallback onFinish;
   final TextStyle textStyle;
-  Welcome({this.seconds = 120, this.onFinish, this.textStyle});
+
+  Welcome({ this.onFinish, this.textStyle});
 
   @override
   _WelcomeState createState() => _WelcomeState();
@@ -36,6 +45,8 @@ class _WelcomeState extends State<Welcome> with TickerProviderStateMixin {
   AnimationController _controller;
   var provider;
   var _fref;
+  int _firebaseTime  = 120;
+  LevelTime levelTime;
   String get timerString {
     Duration duration = _controller.duration * _controller.value;
     return '${duration.inMinutes}:${(duration.inSeconds % 60).toString().padLeft(2, '0')}';
@@ -43,7 +54,6 @@ class _WelcomeState extends State<Welcome> with TickerProviderStateMixin {
 
   @override
   void initState() {
-     _fref = FirebaseDatabase().reference();
     super.initState();
     _assetsAudioPlayer = AssetsAudioPlayer();
     _assetsAudioPlayer.open(
@@ -52,7 +62,7 @@ class _WelcomeState extends State<Welcome> with TickerProviderStateMixin {
     );
     _assetsAudioPlayer.playOrPause();
     _controller = AnimationController(
-        duration: Duration(seconds: widget.seconds), vsync: this);
+        duration: Duration(seconds: _firebaseTime), vsync: this);
 
     _controller.addListener(() {
       if (timerString != null && timerString == "0:00") {
@@ -70,8 +80,12 @@ class _WelcomeState extends State<Welcome> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    var _firebaseWords = _fref.child('Level1');
     provider = Provider.of<PageProvider>(context);
+    _fref = FirebaseDatabase().reference();
+    var _firebaseWords = _fref.child(provider.getLevel);
+    //  var _firebaseWords = _fref.child(Level.values[_count].toString());
+    _firebaseTime = _fref.child(provider.getLevelTime);
+
     scoreValue = provider.score;
     return Scaffold(
         body: Container(
@@ -87,7 +101,7 @@ class _WelcomeState extends State<Welcome> with TickerProviderStateMixin {
           builder: (context, AsyncSnapshot<DataSnapshot> snapshot) {
             if (snapshot.hasData) {
               if (snapshot.data != null) {
-                if( cardWordsList.length == 0 && wordsList.length==0){
+                if (cardWordsList.length == 0 && wordsList.length == 0) {
                   cardWordsList.clear();
                   wordsList.clear();
                   List<dynamic> values = snapshot.data.value;
@@ -174,8 +188,8 @@ class _WelcomeState extends State<Welcome> with TickerProviderStateMixin {
       InkWell(
         onTap: () {
           if (cardName == wordsList[_i]) {
-            if ((_i+1) == wordsList.length) {
-              showSuccessDialog();
+            if ((_i + 1) == wordsList.length) {
+              showSuccessDialog(_context);
             } else if (!switched[index]) {
               setState(() {
                 scoreValue = provider.scoreValue(scoreValue++);
@@ -197,59 +211,6 @@ class _WelcomeState extends State<Welcome> with TickerProviderStateMixin {
               child: _animatedWidget(color, index, cardName)),
         ),
       );
-
-  void showSuccessDialog() {
-    showDialog<String>(
-        context: _context,
-        builder: (BuildContext context) {
-          return UnicornAlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            title: Text('Harikasın !'),
-            titleTextStyle: textStyle,
-            content: Text('Bütün kelimeleri bildin. Bir sonraki seviyeye geömek ister misin?'),
-            actions: [
-              okBtn, cancelBtn
-            ],
-            contentTextStyle: whiteTextFormStyle,
-            gradient: LinearGradient(
-              colors: [cyan, pink],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          );
-        });
-  }
-  Widget okBtn = FlatButton(
-    child: Text("Tamam"),
-    onPressed: () { },
-  );
-  Widget cancelBtn = FlatButton(
-    child: Text("İptal"),
-    onPressed: () { },
-  );
-
-  void showTimesUPDialog(BuildContext context) {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return UnicornAlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            title: Text('Tüh !'),
-            titleTextStyle: textStyle,
-            content: Text('Süren Doldu :('),
-            contentTextStyle: whiteTextFormStyle,
-            gradient: LinearGradient(
-              colors: [cyan, pink],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          );
-        });
-  }
 
   _animatedWidget(Color color, int index, String colorName) {
     return switched[index] != null && switched[index]

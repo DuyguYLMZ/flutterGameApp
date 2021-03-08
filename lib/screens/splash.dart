@@ -1,6 +1,5 @@
 import 'dart:core';
 import 'dart:async';
-import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -59,7 +58,6 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      resizeToAvoidBottomPadding: false,
       body: new InkWell(
         onTap: () {
           FocusScope.of(context).requestFocus(FocusNode());

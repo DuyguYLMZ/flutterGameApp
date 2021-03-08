@@ -1,3 +1,4 @@
+// @dart=2.9
 import 'package:finder/pageprovider.dart';
 import 'package:finder/screens/splash.dart';
 import 'package:finder/screens/welcome.dart';
@@ -6,6 +7,7 @@ import 'package:finder/values/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/src/widgets/framework.dart';
+
 void main() {
   runApp(MyApp());
 }
@@ -17,7 +19,8 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          builder: (context) => PageProvider(),),
+          create: (context) => PageProvider(),
+        ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -30,19 +33,20 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
   final String title;
+
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-@override
+  @override
   void initState() {
     // TODO: implement initState
     super.initState();
-}
+  }
+
   @override
   Widget build(BuildContext context) {
-
     var assetsImage = new AssetImage(
         'assets/images/ikon.png'); //<- Creates an object that fetches an image.
     var image = new Image(image: assetsImage);
@@ -58,10 +62,7 @@ class _MyHomePageState extends State<MyHomePage> {
             stops: [0.0, 1.0],
             tileMode: TileMode.clamp),
         styleTextUnderTheLoader: new TextStyle(),
-        photoSize: MediaQuery
-            .of(context)
-            .size
-            .height / 6,
+        photoSize: MediaQuery.of(context).size.height / 6,
         loaderColor: white);
   }
 }
